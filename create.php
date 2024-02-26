@@ -61,13 +61,18 @@
                 $phoneError = 'Phone number already exists';
             }
         // If all fields are valid, insert the contact into the database
-        if (empty($nameError) && empty($emailError) && empty($phoneError)) {
-            $stmt = $pdo->prepare('INSERT INTO contacts (name, email, phone_number) VALUES (?, ?, ?)');
-            $stmt->execute([$name, $email, $phone]);
+            if (empty($nameError) && empty($emailError) && empty($phoneError)) {
 
-            header('Location: index.php');
-            exit;
-        }
+                // Generate a CSRF token and store it in the session
+                session_start();
+                $csrfToken = bin2hex(random_bytes(32));
+                $_SESSION['csrf_token'] = $csrfToken;
+                $stmt = $pdo->prepare('INSERT INTO contacts (name, email, phone_number) VALUES (?, ?, ?)');
+                $stmt->execute([$name, $email, $phone]);
+
+                header('Location: index.php');
+                exit;
+            }
       }
     }
     ?>
