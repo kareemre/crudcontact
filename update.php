@@ -96,7 +96,7 @@
     
 
     <form method="POST">
-    <input type="hidden" name="id" value="<?php echo $id; ?>">
+    <input type="hidden" name="csrf_token" value="<?php echo $csrfToken; ?>">
         <div class="form-group">
             <label for="name">Name</label>
             <input type="text" class="form-control" id="name" name="name" value="<?php echo $name; ?>" required>
