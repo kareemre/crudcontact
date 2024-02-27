@@ -1,45 +1,65 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Contact Management</title>
-    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
-</head>
-<body>
-<div class="container">
-    <h2>Contact Management System</h2>
-    <a href="create.php" class="btn btn-primary">Add New Contact</a>
-    <table class="table table-striped">
-        <thead>
+<?php
+session_start();
+
+include 'includes/db.php';
+include 'includes/functions.php';
+include 'includes/security.php';
+
+
+
+$searchName = $_GET['name'] ?? '';
+
+$query = 'SELECT * FROM contacts WHERE 1';
+
+if ($searchName) {
+    $query .= ' AND name LIKE :name';
+    $params['name'] = '%' . $searchName . '%';
+}
+
+
+$stmt = $pdo->query('SELECT * FROM contacts');
+$contacts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+?>
+
+<?php include 'templates/header.php'; ?>
+
+<h2>Contacts</h2>
+
+<form method="get" class="mb-3">
+    <div class="form-row">
+        <div class="col-md-4">
+            <input type="text" class="form-control" name="name" placeholder="Search by Name" value="<?php echo $searchName; ?>">
+        </div>
+        <div class="col-md-12 mt-2">
+            <button type="submit" class="btn btn-primary">Search</button>
+        </div>
+    </div>
+</form>
+
+<a href="create.php" class="btn btn-primary mb-3">Add Contact</a>
+
+<table class="table">
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Phone</th>
+        <th>Action</th>
+    </tr>
+    </thead>
+    <tbody>
+    <?php foreach ($contacts as $contact) : ?>
         <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Phone</th>
-            <th>Action</th>
+            <td><?php echo $contact['name']; ?></td>
+            <td><?php echo $contact['email']; ?></td>
+            <td><?php echo $contact['phone_number']; ?></td>
+            <td>
+                <a href="update.php?id=<?php echo $contact['id']; ?>" class="btn btn-primary btn-sm">Edit</a>
+                <a href="delete.php?id=<?php echo $contact['id']; ?>" class="btn btn-danger btn-sm"
+                   onclick="return confirm('Are you sure you want to delete this contact?')">Delete</a>
+            </td>
         </tr>
-        </thead>
-        <tbody>
-        <?php
-        include 'includes/db.php';
-
-        $stmt = $pdo->prepare('SELECT * FROM contacts ORDER BY id DESC');
-        $stmt->execute();
-        $contacts = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        foreach ($contacts as $contact) {
-            echo '<tr>';
-            echo '<td>' . $contact['name'] . '</td>';
-            echo '<td>' . $contact['email'] . '</td>';
-            echo '<td>' . $contact['phone_number'] . '</td>';
-            echo '<td>
-                        <a href="update.php?id=' . $contact['id'] . '" class="btn btn-sm btn-primary">Edit</a>
-                        <a href="delete.php?id=' . $contact['id'] . '" class="btn btn-sm btn-danger">Delete</a>
-                  </td>';
-            echo '</tr>';
-        }
-        ?>
-        </tbody>
-    </table>
-</div>
-<script src="assets/js/bootstrap.min.js"></script>
-</body>
-</html>
+    <?php endforeach; ?>
+    </tbody>
+</table>
+<?php include 'templates/footer.php'; ?>

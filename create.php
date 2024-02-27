@@ -1,102 +1,89 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Add Contact</title>
-    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
-    <style>
-        .error {
-            color: red;
-        }
-    </style>
-</head>
-<body>
-<div class="container">
-    <h2>Add Contact</h2>
+<?php
+session_start();
 
-    <?php
-    include 'includes/db.php';
-    $name = $email = $phone = '';
-    $nameError = $emailError = $phoneError = '';
+include 'includes/db.php';
+include 'includes/functions.php';
+include 'includes/security.php';
 
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $name  = htmlspecialchars($_POST['name']);
-        $email = htmlspecialchars($_POST['email']);
-        $phone = htmlspecialchars($_POST['phone']); 
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    validateCSRFToken($_POST['csrf_token']);
 
-                // Validate name
-        if (empty($name)) {
-            $nameError = 'Name is required';
-        } elseif (!preg_match('/^[a-zA-Z\s]+$/', $name)) {
-            $nameError = 'Name can only contain letters and spaces';
-        }
+    $name = sanitizeInput($_POST['name']);
+    $email = sanitizeInput($_POST['email']);
+    $phone = sanitizeInput($_POST['phone']);
 
-        // Validate email
-        if (empty($email)) {
-            $emailError = 'Email is required';
-        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $emailError = 'Invalid email format';
-        } else {
-            // Check if email is unique
-            $stmt = $pdo->prepare('SELECT COUNT(*) FROM contacts WHERE email = ?');
-            $stmt->execute([$email]);
-            $count = $stmt->fetchColumn();
+    $errors = [];
 
-            if ($count > 0) {
-                $emailError = 'Email already exists';
-            }
-        }
-
-        // Validate phone
-        if (empty($phone)) {
-            $phoneError = 'Phone is required';
-        } elseif (!preg_match('/^\d{11}$/', $phone)) {
-            $phoneError = 'Invalid phone number format (11 digits only)';
-        } else {
-            // Check if phone number is unique
-            $stmt = $pdo->prepare('SELECT COUNT(*) FROM contacts WHERE phone_number = ?');
-            $stmt->execute([$phone]);
-            $count = $stmt->fetchColumn();
-
-            if ($count > 0) {
-                $phoneError = 'Phone number already exists';
-            }
-        // If all fields are valid, insert the contact into the database
-            if (empty($nameError) && empty($emailError) && empty($phoneError)) {
-
-                // Generate a CSRF token and store it in the session
-                session_start();
-                $csrfToken = bin2hex(random_bytes(32));
-                $_SESSION['csrf_token'] = $csrfToken;
-                $stmt = $pdo->prepare('INSERT INTO contacts (name, email, phone_number) VALUES (?, ?, ?)');
-                $stmt->execute([$name, $email, $phone]);
-
-                header('Location: index.php');
-                exit;
-            }
-      }
+    if (empty($name)) {
+        $errors[] = 'Name is required.';
     }
-    ?>
 
-    <form method="POST">
+    if (empty($email)) {
+        $errors[] = 'Email is required.';
+    } elseif (!validateEmail($email)) {
+        $errors[] = 'Invalid email format.';
+    } elseif (!isEmailUnique($pdo, $email)) {
+        $errors[] = 'Email already exists.';
+    }
+
+    if (empty($phone)) {
+        $errors[] = 'Phone is required.';
+    } elseif (!validatePhone($phone)) {
+        $errors[] = 'Invalid phone format.';
+    } elseif (!isPhoneUnique($pdo, $phone)) {
+        $errors[] = 'Phone number already exists.';
+    }
+
+    if (empty($errors)) {
+        $stmt = $pdo->prepare('INSERT INTO contacts (name, email, phone_number) VALUES (?, ?, ?)');
+        $stmt->execute([$name, $email, $phone]);
+
+        $_SESSION['success'] = 'Contact added successfully.';
+        header('Location: index.php');
+        exit();
+    }
+} else {
+    $name = '';
+    $email = '';
+    $phone = '';
+}
+
+$csrfToken = generateCSRFToken();
+?>
+
+<?php include 'templates/header.php'; ?>
+
+<h2>Add Contact</h2>
+
+<?php if (!empty($errors)) : ?>
+    <div class="alert alert-danger">
+        <ul>
+            <?php foreach ($errors as $error) : ?>
+                <li><?php echo $error; ?></li>
+            <?php endforeach; ?>
+        </ul>
+    </div>
+<?php endif; ?>
+
+<form method="POST" action="">
     <input type="hidden" name="csrf_token" value="<?php echo $csrfToken; ?>">
+
     <div class="form-group">
-            <label for="name">Name</label>
-            <input type="text" class="form-control" id="name" name="name" value="<?php echo $name; ?>" required>
-            <span class="error"><?php echo $nameError; ?></span>
-        </div>
-        <div class="form-group">
-            <label for="email">Email</label>
-            <input type="email" class="form-control" id="email" name="email" value="<?php echo $email; ?>" required>
-            <span class="error"><?php echo $emailError; ?></span>
-        </div>
-        <div class="form-group">
-            <label for="phone">Phone</label>
-            <input type="text" class="form-control" id="phone" name="phone" value="<?php echo $phone; ?>" required>
-            <span class="error"><?php echo $phoneError; ?></span>
-        </div>
-        <button type="submit" class="btn btn-primary">Add Contact</button>
-    </form>
-</div>
-<script src="assets/js/bootstrap.min.js"></script>
-</body>
-</html>
+        <label for="name">Name</label>
+        <input type="text" class="form-control" id="name" name="name" value="<?php echo $name; ?>">
+    </div>
+
+    <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" class="form-control" id="email" name="email" value="<?php echo $email; ?>">
+    </div>
+
+    <div class="form-group">
+        <label for="phone">Phone</label>
+        <input type="text" class="form-control" id="phone" name="phone" value="<?php echo $phone; ?>">
+    </div>
+
+    <button type="submit" class="btn btn-primary">Add</button>
+</form>
+
+<?php include 'templates/footer.php'; ?>
