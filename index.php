@@ -5,36 +5,39 @@ include 'includes/db.php';
 include 'includes/functions.php';
 include 'includes/security.php';
 
+$search = '';
+$contacts = [];
 
+if (isset($_GET['search'])) {
+    $search = $_GET['search'];
 
-$searchName = $_GET['name'] ?? '';
-
-$query = 'SELECT * FROM contacts WHERE 1';
-
-if ($searchName) {
-    $query .= ' AND name LIKE :name';
-    $params['name'] = '%' . $searchName . '%';
+    // Fetch contacts matching the search query
+    $stmt = $pdo->prepare('SELECT * FROM contacts WHERE name LIKE :search');
+    $stmt->execute(['search' => '%' . $search . '%']);
+    $contacts = $stmt->fetchAll();
+} else {
+    // Fetch all contacts
+    $stmt = $pdo->query('SELECT * FROM contacts');
+    $contacts = $stmt->fetchAll();
 }
-
-
-$stmt = $pdo->query('SELECT * FROM contacts');
-$contacts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <?php include 'templates/header.php'; ?>
 
 <h2>Contacts</h2>
 
-<form method="get" class="mb-3">
-    <div class="form-row">
-        <div class="col-md-4">
-            <input type="text" class="form-control" name="name" placeholder="Search by Name" value="<?php echo $searchName; ?>">
-        </div>
-        <div class="col-md-12 mt-2">
-            <button type="submit" class="btn btn-primary">Search</button>
-        </div>
+<form class="mb-3" method="GET">
+    <div class="form-inline">
+        <input type="text" class="form-control mr-2" name="search" placeholder="Search by name" value="<?php echo htmlspecialchars($search); ?>">
+        <button type="submit" class="btn btn-primary">Search</button>
     </div>
 </form>
+
+<?php if ($search !== '') : ?>
+    <div class="alert alert-info">
+        Searching for: <strong><?php echo htmlspecialchars($search); ?></strong>
+    </div>
+<?php endif; ?>
 
 <a href="create.php" class="btn btn-primary mb-3">Add Contact</a>
 
