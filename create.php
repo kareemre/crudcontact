@@ -1,61 +1,49 @@
 <?php
 session_start();
 
-include 'includes/db.php';
-include 'includes/functions.php';
-include 'includes/security.php';
+require_once 'c:/xampp/htdocs/Contacts/core/Database/MySqlConnection.php';
+require_once 'c:/xampp/htdocs/Contacts/core/Database/MySqlQueryBuilder.php';
+require_once 'c:/xampp/htdocs/Contacts/core/Validation/Validation.php';
+require_once 'c:/xampp/htdocs/Contacts/core/security.php';
+
+$dbConnection = new MySqlConnection;
+$db = new MySqlQueryBuilder($dbConnection);
+$validator = new Validation($db);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    validateCSRFToken($_POST['csrf_token']);
 
-    $name = sanitizeInput($_POST['name']);
+    $name  = sanitizeInput($_POST['name']);
     $email = sanitizeInput($_POST['email']);
     $phone = sanitizeInput($_POST['phone']);
 
-    $errors = [];
+    $validator->required('name');
 
-    if (empty($name)) {
-        $errors[] = 'Name is required.';
-    }
+    $validator->required('email')->email('email')->unique('email', ['contacts', 'email']);
 
-    if (empty($email)) {
-        $errors[] = 'Email is required.';
-    } elseif (!validateEmail($email)) {
-        $errors[] = 'Invalid email format.';
-    } elseif (!isEmailUnique($pdo, $email)) {
-        $errors[] = 'Email already exists.';
-    }
+    $validator->required('phone')->unique('phone', ['contacts', 'phone_number']);
 
-    if (empty($phone)) {
-        $errors[] = 'Phone is required.';
-    } elseif (!validatePhone($phone)) {
-        $errors[] = 'Invalid phone format.';
-    } elseif (!isPhoneUnique($pdo, $phone)) {
-        $errors[] = 'Phone number already exists.';
-    }
 
-    if (empty($errors)) {
-        $stmt = $pdo->prepare('INSERT INTO contacts (name, email, phone_number) VALUES (?, ?, ?)');
-        $stmt->execute([$name, $email, $phone]);
+    if ($validator->passes()) {
+        $db->data([
+            'name' => $name,
+            'email' => $email,
+            'phone_number' => $phone,
+        ])->insert('contacts');
 
         $_SESSION['success'] = 'Contact added successfully.';
         header('Location: index.php');
         exit();
     }
-} else {
-    $name = '';
-    $email = '';
-    $phone = '';
-}
-
+} 
 $csrfToken = generateCSRFToken();
 ?>
 
-<?php include 'templates/header.php'; ?>
+<?php include 'components/header.php'; ?>
 
 <h2>Add Contact</h2>
 
-<?php if (!empty($errors)) : ?>
+<?php if ($validator->fails()) : $errors = $validator->getMessages();?>
+    
     <div class="alert alert-danger">
         <ul>
             <?php foreach ($errors as $error) : ?>
@@ -65,25 +53,25 @@ $csrfToken = generateCSRFToken();
     </div>
 <?php endif; ?>
 
-<form method="POST" action="">
-    <input type="hidden" name="csrf_token" value="<?php echo $csrfToken; ?>">
 
+<form method="POST" action="">
+    
     <div class="form-group">
         <label for="name">Name</label>
-        <input type="text" class="form-control" id="name" name="name" value="<?php echo $name; ?>">
+        <input type="text" class="form-control" id="name" name="name" value="">
     </div>
 
     <div class="form-group">
         <label for="email">Email</label>
-        <input type="email" class="form-control" id="email" name="email" value="<?php echo $email; ?>">
+        <input type="email" class="form-control" id="email" name="email" value="">
     </div>
 
     <div class="form-group">
         <label for="phone">Phone</label>
-        <input type="text" class="form-control" id="phone" name="phone" value="<?php echo $phone; ?>">
+        <input type="text" class="form-control" id="phone" name="phone" value="">
     </div>
 
     <button type="submit" class="btn btn-primary">Add</button>
 </form>
 
-<?php include 'templates/footer.php'; ?>
+<?php include 'components/footer.php'; ?>
