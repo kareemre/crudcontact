@@ -1,27 +1,13 @@
 <?php
 session_start();
-require_once 'c:/xampp/htdocs/Contacts/core/Database/MySqlConnection.php';
-require_once 'c:/xampp/htdocs/Contacts/core/Database/MySqlQueryBuilder.php';
-require_once 'c:/xampp/htdocs/Contacts/core/Validation/Validation.php';
+require_once 'c:/xampp/htdocs/Contacts/classes/Database/MySqlConnection.php';
+require_once 'c:/xampp/htdocs/Contacts/classes/Database/MySqlQueryBuilder.php';
+require_once 'c:/xampp/htdocs/Contacts/classes/Validation/Validation.php';
 
 $dbConnection = new MySqlConnection;
 $db = new MySqlQueryBuilder($dbConnection);
-$validator = new Validation($db);
-
-// $search = '';
-// $contacts = [];
-
-// if (isset($_GET['search'])) {
-//     $search = $_GET['search'];
-
-//     // Fetch contacts matching the search query
-//     $stmt = $pdo->prepare('SELECT * FROM contacts WHERE name LIKE :search');
-//     $stmt->execute(['search' => '%' . $search . '%']);
-//     $contacts = $stmt->fetchAll();
-// } 
     // Fetch all contacts
     $contacts = $db->getAll('contacts');
-
 
 ?>
 

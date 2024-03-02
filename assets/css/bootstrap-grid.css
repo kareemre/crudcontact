@@ -4,6 +4,17 @@
  * Copyright 2011-2018 Twitter, Inc.
  * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
  */
+ /* // $search = '';
+// $contacts = [];
+
+// if (isset($_GET['search'])) {
+//     $search = $_GET['search'];
+
+//     // Fetch contacts matching the search query
+//     $stmt = $pdo->prepare('SELECT * FROM contacts WHERE name LIKE :search');
+//     $stmt->execute(['search' => '%' . $search . '%']);
+//     $contacts = $stmt->fetchAll();
+// }  */
 @-ms-viewport {
   width: device-width;
 }

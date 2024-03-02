@@ -16,13 +16,6 @@ class MySqlQueryBuilder
     private $table;
 
     /**
-     * user's data that will be handled through the application    
-     *
-     * @var array
-     */
-
-
-    /**
      * Total Rows
      *
      * @var int
@@ -109,18 +102,6 @@ class MySqlQueryBuilder
         return $this;
     }
 
-    /**
-     * Set Join clause
-     *
-     * @param string $join
-     * @return $this
-     */
-    public function join($join)
-    {
-        $this->joins[] = $join;
-
-        return $this;
-    }
 
     /**
      * get only  one record
@@ -255,11 +236,40 @@ class MySqlQueryBuilder
         if ($table) {
             $this->table($table);
         }
-        $sqlQuery = "INSERT INTO " . $this->table . " SET ";
 
-        $sqlQuery = $this->setFields();
+        $sql = 'INSERT INTO ' . $this->table . ' SET ';
 
-        $this->queryExcute($sqlQuery, $this->bindings);
+        $sql .= $this->setFields();
+
+        $this->queryExcute($sql, $this->bindings);
+
+        $this->reset();
+
+        return $this;
+    }
+
+    /**
+     * Delete Clause
+     *
+     * @param string $table
+     * @return $this
+     */
+    public function delete($table = null)
+    {
+        if ($table) {
+            $this->table($table);
+        }
+
+        $sql = 'DELETE FROM ' . $this->table . ' ';
+
+        if ($this->wheres) {
+            $sql .= ' WHERE ' . implode(' ' , $this->wheres);
+        }
+
+        $this->queryExcute($sql, $this->bindings);
+
+        $this->reset();
+
         return $this;
     }
 

@@ -1,10 +1,10 @@
 <?php
 session_start();
 
-require_once 'c:/xampp/htdocs/Contacts/core/Database/MySqlConnection.php';
-require_once 'c:/xampp/htdocs/Contacts/core/Database/MySqlQueryBuilder.php';
-require_once 'c:/xampp/htdocs/Contacts/core/Validation/Validation.php';
-require_once 'c:/xampp/htdocs/Contacts/core/security.php';
+require_once 'c:/xampp/htdocs/Contacts/classes/Database/MySqlConnection.php';
+require_once 'c:/xampp/htdocs/Contacts/classes/Database/MySqlQueryBuilder.php';
+require_once 'c:/xampp/htdocs/Contacts/classes/Validation/Validation.php';
+require_once 'c:/xampp/htdocs/Contacts/classes/helpers.php';
 
 $dbConnection = new MySqlConnection;
 $db = new MySqlQueryBuilder($dbConnection);
@@ -12,6 +12,7 @@ $validator = new Validation($db);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
+    validateCSRFToken($_POST['csrf_token']);
     $name  = sanitizeInput($_POST['name']);
     $email = sanitizeInput($_POST['email']);
     $phone = sanitizeInput($_POST['phone']);
@@ -27,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $db->data([
             'name' => $name,
             'email' => $email,
-            'phone_number' => $phone,
+            'phone_number' => $phone
         ])->insert('contacts');
 
         $_SESSION['success'] = 'Contact added successfully.';
@@ -52,10 +53,12 @@ $csrfToken = generateCSRFToken();
         </ul>
     </div>
 <?php endif; ?>
+<!-- <?php echo $email; ?> -->
 
 
 <form method="POST" action="">
-    
+
+    <input type="hidden" name="csrf_token" value="<?php echo $csrfToken; ?>">
     <div class="form-group">
         <label for="name">Name</label>
         <input type="text" class="form-control" id="name" name="name" value="">
