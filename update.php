@@ -2,7 +2,7 @@
 session_start();
 
 require_once 'c:/xampp/htdocs/Contacts/classes/Database/MySqlConnection.php';
-require_once 'c:/xampp/htdocs/Contacts/classes/Database/MySqlQueryBuilder.php';
+require_once 'c:/xampp/htdocs/Contacts/classes/Database/QueryBuilder.php';
 require_once 'c:/xampp/htdocs/Contacts/classes/Validation/Validation.php';
 require_once 'c:/xampp/htdocs/Contacts/classes/helpers.php';
 
