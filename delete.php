@@ -1,9 +1,9 @@
 <?php
-require_once 'c:/xampp/htdocs/Contacts/classes/Database/MySqlConnection.php';
-require_once 'c:/xampp/htdocs/Contacts/classes/Database/MySqlQueryBuilder.php';
+require_once 'classes/Database/MySqlConnection.php';
+require_once 'classes/Database/QueryBuilder.php';
 
 $dbConnection = new MySqlConnection;
-$db = new MySqlQueryBuilder($dbConnection);
+$db = new QueryBuilder($dbConnection);
 
 if (isset($_GET['id'])) {
     $id = $_GET['id'];

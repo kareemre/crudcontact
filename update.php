@@ -1,13 +1,13 @@
 <?php
 session_start();
 
-require_once 'c:/xampp/htdocs/Contacts/classes/Database/MySqlConnection.php';
-require_once 'c:/xampp/htdocs/Contacts/classes/Database/QueryBuilder.php';
-require_once 'c:/xampp/htdocs/Contacts/classes/Validation/Validation.php';
-require_once 'c:/xampp/htdocs/Contacts/classes/helpers.php';
+require_once 'classes/Database/MySqlConnection.php';
+require_once 'classes/Database/QueryBuilder.php';
+require_once 'classes/Validation/Validation.php';
+require_once 'classes/helpers.php';
 
 $dbConnection = new MySqlConnection;
-$db = new MySqlQueryBuilder($dbConnection);
+$db = new QueryBuilder($dbConnection);
 $validator = new Validation($db);
 
 $id = $_GET['id'] ?? null;
@@ -70,25 +70,6 @@ $csrfToken = generateCSRFToken();
     </div>
 <?php endif; ?>
 
-<form method="POST">
-    <input type="hidden" name="csrf_token" value="<?php echo $csrfToken; ?>">
-
-    <div class="form-group">
-        <label for="name">Name</label>
-        <input type="text" class="form-control" id="name" name="name" value="" required>
-    </div>
-
-    <div class="form-group">
-        <label for="email">Email</label>
-        <input type="email" class="form-control" id="email" name="email" value="" required>
-    </div>
-
-    <div class="form-group">
-        <label for="phone">Phone</label>
-        <input type="text" class="form-control" id="phone" name="phone" value="" required>
-    </div>
-
-    <button type="submit" class="btn btn-primary">Update</button>
-</form>
+<?php include 'components/update_form.php'; ?>
 
 <?php include 'components/footer.php'; ?>

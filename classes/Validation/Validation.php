@@ -9,7 +9,7 @@ class Validation
      *
      * @var mixed
      */
-    private $mySqlQueryBuilder;
+    private $QueryBuilder;
     
     /**
      * errors container
@@ -19,9 +19,9 @@ class Validation
     private $errors = [];
     
 
-    public function __construct(MySqlQueryBuilder $mySqlQueryBuilder)
+    public function __construct(QueryBuilder $QueryBuilder)
     {
-        $this->mySqlQueryBuilder = $mySqlQueryBuilder;
+        $this->QueryBuilder = $QueryBuilder;
     }
 
     /**
@@ -44,7 +44,7 @@ class Validation
 
         list($table, $column) = $databaseData; 
 
-        $result = $this->mySqlQueryBuilder->select($column)
+        $result = $this->QueryBuilder->select($column)
                                           ->from($table)
                                           ->where($column . ' = ?' , $inputValue)
                                           ->get();

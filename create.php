@@ -1,13 +1,13 @@
 <?php
 session_start();
 
-require_once 'c:/xampp/htdocs/Contacts/classes/Database/MySqlConnection.php';
-require_once 'c:/xampp/htdocs/Contacts/classes/Database/MySqlQueryBuilder.php';
-require_once 'c:/xampp/htdocs/Contacts/classes/Validation/Validation.php';
-require_once 'c:/xampp/htdocs/Contacts/classes/helpers.php';
+require_once 'classes/Database/MySqlConnection.php';
+require_once 'classes/Database/QueryBuilder.php';
+require_once 'classes/Validation/Validation.php';
+require_once 'classes/helpers.php';
 
 $dbConnection = new MySqlConnection;
-$db = new MySqlQueryBuilder($dbConnection);
+$db = new QueryBuilder($dbConnection);
 $validator = new Validation($db);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -53,28 +53,8 @@ $csrfToken = generateCSRFToken();
         </ul>
     </div>
 <?php endif; ?>
-<!-- <?php echo $email; ?> -->
 
 
-<form method="POST" action="">
-
-    <input type="hidden" name="csrf_token" value="<?php echo $csrfToken; ?>">
-    <div class="form-group">
-        <label for="name">Name</label>
-        <input type="text" class="form-control" id="name" name="name" value="">
-    </div>
-
-    <div class="form-group">
-        <label for="email">Email</label>
-        <input type="email" class="form-control" id="email" name="email" value="">
-    </div>
-
-    <div class="form-group">
-        <label for="phone">Phone</label>
-        <input type="text" class="form-control" id="phone" name="phone" value="">
-    </div>
-
-    <button type="submit" class="btn btn-primary">Add</button>
-</form>
+<?php include 'components/create_form.php'; ?>
 
 <?php include 'components/footer.php'; ?>
